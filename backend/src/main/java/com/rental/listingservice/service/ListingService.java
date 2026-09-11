@@ -1,5 +1,8 @@
 package com.rental.listingservice.service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -13,9 +16,11 @@ import com.rental.listingservice.repository.ListingRepository;
 @Service
 public class ListingService {
     private final ListingRepository repo;
+    private final ScoringService scoringService;
 
-    public ListingService(ListingRepository repo) {
+    public ListingService(ListingRepository repo, ScoringService scoringService) {
         this.repo = repo;
+        this.scoringService = scoringService;
     }
 
     public PagedResult<ListingResponse> search(ListingSearchCriteria criteria) {
@@ -26,7 +31,11 @@ public class ListingService {
         .filter(item -> matchesKeyword(item, criteria))
         .toList();
 
-        List<ListingResponse> res = filteredList.stream().map(item -> buildSearchResponse(item, getScore(item))).toList();
+        List<Listing> sortedList = rankListings(filteredList, criteria);
+
+        List<ListingResponse> res = sortedList.stream()
+        .map(item -> buildSearchResponse(item, scoringService.getPriceScore(item.getPrice(), criteria.targetBudget())))
+        .toList();
 
         return new PagedResult<>(res, 0, res.size(), res.size(), 1);
     }
@@ -55,11 +64,25 @@ public class ListingService {
         return item.getDescription().toLowerCase().trim().contains(criteria.keyword().toLowerCase().trim());
     }
 
-    private double getScore(Listing item) {
-        return 0.0;
+    private List<Listing> rankListings(List<Listing> listings, ListingSearchCriteria criteria) {
+        return listings.stream()
+        .sorted(
+            Comparator.comparingDouble((Listing item) -> scoringService.getPriceScore(item.getPrice(), criteria.targetBudget()))
+            .reversed()
+            .thenComparing(scoringService::getRecencyRank, Comparator.reverseOrder())
+        ).toList();
+    }
+
+    private long getDaysOnMarket(Listing item) {
+        try{
+            LocalDate listed = LocalDate.parse(item.getListedDate());
+            return ChronoUnit.DAYS.between(listed, LocalDate.now());
+        } catch(Exception e) {
+            return -1; // missing date
+        }
     }
 
     private ListingResponse buildSearchResponse(Listing item, double score) {
-        return new ListingResponse(item.getId(), item.getSource(), item.getAddress(), item.getCity(), item.getZip(), item.getPrice(), item.getBedrooms(), item.getBathrooms(),item.getStatus(), item.getDescription(), score);
+        return new ListingResponse(item.getId(),item.getAddress(),item.getCity(),item.getZip(),item.getPrice(),item.getBedrooms(),item.getBathrooms(),item.getDescription(),getDaysOnMarket(item), score);
     }
 }

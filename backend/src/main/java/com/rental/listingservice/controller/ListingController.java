@@ -27,9 +27,10 @@ public class ListingController {
         @RequestParam(required=false) String city,
         @RequestParam(required=false) String keyword,
         @RequestParam(required=false) Integer page,
-        @RequestParam(required=false) Integer itemsPerPage
+        @RequestParam(required=false) Integer itemsPerPage,
+        @RequestParam(required=false) Integer targetBudget
     ) {
-        ListingSearchCriteria criteria = ListingSearchCriteria.of(minPrice, maxPrice, minBedrooms, city, keyword, page, page);
+        ListingSearchCriteria criteria = ListingSearchCriteria.of(minPrice, maxPrice, minBedrooms, city, keyword, page, page,targetBudget);
         System.out.println("criteria: "+criteria);
         return listingService.search(criteria);
     }
