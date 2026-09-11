@@ -7,7 +7,7 @@ public class Listing {
     private String city;
     private String state;
     private String zip;
-    private double price;
+    private int price;
     private int bedrooms;
     private double bathrooms;
     private int sqft;
@@ -29,8 +29,8 @@ public class Listing {
     public void setState(String state) { this.state = state; }
     public String getZip() { return zip; }
     public void setZip(String zip) { this.zip = zip; }
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
+    public int getPrice() { return price; }
+    public void setPrice(int price) { this.price = price; }
     public int getBedrooms() { return bedrooms; }
     public void setBedrooms(int bedrooms) { this.bedrooms = bedrooms; }
     public double getBathrooms() { return bathrooms; }

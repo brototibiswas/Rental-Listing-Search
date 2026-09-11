@@ -32,12 +32,14 @@ public class ListingService {
     }
 
     private boolean matchesPrice(Listing item, ListingSearchCriteria criteria) {
-        if(criteria.minPrice() != null && (item.getPrice() < criteria.minPrice())) return false;
-        if(criteria.maxPrice() != null && (item.getPrice() > criteria.maxPrice())) return false;
-        return true;
+        boolean searchPriceGreaterThanListingPrice = criteria.minPrice() != null && (item.getPrice() < criteria.minPrice());
+        boolean searchPriceSmallerThanListingPrice = criteria.maxPrice() != null && (item.getPrice() > criteria.maxPrice());
+
+        return !(searchPriceGreaterThanListingPrice || searchPriceSmallerThanListingPrice);
     }
 
     private boolean matchesBedroom(Listing item, ListingSearchCriteria criteria) {
+        if(criteria.minBedrooms() == null) return true;
         return (criteria.minBedrooms() != null && (item.getBedrooms() >= criteria.minBedrooms()));
     }
 

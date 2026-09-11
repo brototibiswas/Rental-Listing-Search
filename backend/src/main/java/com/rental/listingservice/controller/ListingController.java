@@ -21,8 +21,8 @@ public class ListingController {
 
     @GetMapping("/search")
     public PagedResult<ListingResponse> search(
-        @RequestParam(required=false) Double minPrice,
-        @RequestParam(required=false) Double maxPrice,
+        @RequestParam(required=false) Integer minPrice,
+        @RequestParam(required=false) Integer maxPrice,
         @RequestParam(required=false) Integer minBedrooms,
         @RequestParam(required=false) String city,
         @RequestParam(required=false) String keyword,
@@ -30,6 +30,7 @@ public class ListingController {
         @RequestParam(required=false) Integer itemsPerPage
     ) {
         ListingSearchCriteria criteria = ListingSearchCriteria.of(minPrice, maxPrice, minBedrooms, city, keyword, page, page);
+        System.out.println("criteria: "+criteria);
         return listingService.search(criteria);
     }
 }
