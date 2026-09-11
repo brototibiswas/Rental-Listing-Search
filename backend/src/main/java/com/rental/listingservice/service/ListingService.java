@@ -33,11 +33,11 @@ public class ListingService {
 
         List<Listing> sortedList = rankListings(filteredList, criteria);
 
-        List<ListingResponse> res = sortedList.stream()
+        List<ListingResponse> scoredList = sortedList.stream()
         .map(item -> buildSearchResponse(item, scoringService.getPriceScore(item.getPrice(), criteria.targetBudget())))
         .toList();
 
-        return new PagedResult<>(res, 0, res.size(), res.size(), 1);
+        return paginate(scoredList, criteria);
     }
 
     private boolean matchesPrice(Listing item, ListingSearchCriteria criteria) {
@@ -72,6 +72,18 @@ public class ListingService {
             .thenComparing(scoringService::getRecencyRank, Comparator.reverseOrder())
         ).toList();
     }
+
+    private PagedResult<ListingResponse> paginate(List<ListingResponse> listings, ListingSearchCriteria criteria) {
+    int totalCount = listings.size();
+    int totalPages = (int) Math.ceil((double) totalCount / criteria.items());
+
+    int fromIndex = criteria.page() * criteria.items();
+    List<ListingResponse> pageSlice = (fromIndex >= totalCount || fromIndex < 0)
+            ? List.of()
+            : listings.subList(fromIndex, Math.min(fromIndex + criteria.items(), totalCount));
+
+    return new PagedResult<>(pageSlice, criteria.page(), criteria.items(), totalCount, totalPages);
+}
 
     private long getDaysOnMarket(Listing item) {
         try{
