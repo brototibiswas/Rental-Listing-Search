@@ -3,7 +3,20 @@ import { ListingSearchCriteria, SearchResultResponse } from "../types/Listing.ty
 
 const BASE_URL = 'http://localhost:8080/api/listings';
 
-export async function searchListings(searchCriteria: ListingSearchCriteria, page: number, itemsPerPage: number): Promise<SearchResultResponse> {
+async function readErrorMessage(res: Response): Promise<string> {
+    try {
+        const body: unknown = await res.json();
+        if (body !== null && typeof body === 'object' && 'error' in body
+            && typeof body.error === 'string' && body.error.trim() !== '') {
+            return body.error;
+        }
+    } catch {
+        // Body was empty or not JSON - use the generic message below.
+    }
+    return `Failed to fetch listings (${res.status})`;
+}
+
+export async function searchListings(searchCriteria: ListingSearchCriteria, page: number): Promise<SearchResultResponse> {
     const params = new URLSearchParams()
 
     if (searchCriteria.city) {
@@ -21,32 +34,34 @@ export async function searchListings(searchCriteria: ListingSearchCriteria, page
     if (searchCriteria.keyword) {
         params.set('keyword', searchCriteria.keyword);
     }
+    if (searchCriteria.targetBudget !== null && searchCriteria.targetBudget !== undefined) {
+        params.set('targetBudget', searchCriteria.targetBudget.toString());
+    }
 
+    // Page size is owned by the server
     params.set('page', page.toString());
-    params.set('items', itemsPerPage.toString());
 
     const res = await fetch(`${BASE_URL}/search?${params.toString()}`);
     if (!res.ok) {
-        throw new Error('Failed to fetch listings');
+        throw new Error(await readErrorMessage(res));
     }
     return res.json() as Promise<SearchResultResponse>;
 }
 
 export const listingKeys = {
     all: ['listings'] as const,
-    search: (searchCriteria: ListingSearchCriteria, page: number, itemsPerPage: number) =>
-        [...listingKeys.all, 'search', searchCriteria, page, itemsPerPage] as const,
+    search: (searchCriteria: ListingSearchCriteria, page: number) =>
+        [...listingKeys.all, 'search', searchCriteria, page] as const,
 };
 
 export function useListings(
     searchCriteria: ListingSearchCriteria,
     page: number,
-    itemsPerPage: number,
     enabled: boolean = true,
 ) {
     return useQuery<SearchResultResponse>({
-        queryKey: listingKeys.search(searchCriteria, page, itemsPerPage),
-        queryFn: () => searchListings(searchCriteria, page, itemsPerPage),
+        queryKey: listingKeys.search(searchCriteria, page),
+        queryFn: () => searchListings(searchCriteria, page),
         enabled,
         placeholderData: keepPreviousData,
     });

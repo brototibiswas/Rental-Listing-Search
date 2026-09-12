@@ -125,6 +125,6 @@ public class ListingService {
     }
 
     private ListingResponse buildSearchResponse(Listing item, double score) {
-        return new ListingResponse(item.getId(),item.getAddress(),item.getCity(),item.getZip(),item.getPrice(),item.getBedrooms(),item.getBathrooms(),item.getDescription(),getDaysOnMarket(item), score);
+        return new ListingResponse(item.getId(),item.getAddress(),item.getCity(),item.getState(),item.getZip(),item.getPrice(),item.getBedrooms(),item.getBathrooms(),item.getDescription(),getDaysOnMarket(item), score);
     }
 }

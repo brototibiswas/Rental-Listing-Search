@@ -1,6 +1,5 @@
-export interface Listing {
-    id: number
-    source: string
+export interface ListingResult {
+    id: string
     address: string
     city: string
     state: string
@@ -8,16 +7,13 @@ export interface Listing {
     price: number
     bedrooms: number
     bathrooms: number
-    sqft: number
-    latitude: number
-    longitude: number
-    listedDate: string
-    status: string
     description: string
+    daysOnMarket: number
+    score: number
 }
 
 export interface SearchResultResponse {
-    results: Listing[]
+    results: ListingResult[]
     page: number
     totalPages: number
     itemsPerPage: number
@@ -30,4 +26,5 @@ export interface ListingSearchCriteria {
     maxPrice?: number
     minBedrooms?: number
     keyword?: string
+    targetBudget?: number
 }
