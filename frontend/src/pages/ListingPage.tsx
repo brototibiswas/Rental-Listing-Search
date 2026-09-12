@@ -17,6 +17,12 @@ const ListingPage = () => {
         return [...unique].sort();
     }, [data]);
 
+    // Leaves hasSearched alone, so resetting before any search does not trigger one.
+    const handleReset = () => {
+        setSearchCriteria({});
+        setPage(0);
+    };
+
     const handleSearch = (criteria: ListingSearchCriteria) => {
         setSearchCriteria(criteria);
         setPage(0);
@@ -26,7 +32,7 @@ const ListingPage = () => {
     return (
         <div>
             <h1>Listing Search Service</h1>
-            <SearchForm cities={cities} onSearch={handleSearch} />
+            <SearchForm cities={cities} onSearch={handleSearch} onReset={handleReset} />
             {!hasSearched && <h3>What do you want to search?</h3>}
             {hasSearched && isError && <p role="alert">{error.message}</p>}
             {hasSearched && isLoading && <p>Loading...</p>}

@@ -4,9 +4,10 @@ import { validateNumber, validateText } from "../../util/formUtility";
 interface SearchFormProps {
     cities: string[]
     onSearch: (criteria: ListingSearchCriteria) => void
+    onReset: () => void
 }
 
-const SearchForm = ({ cities, onSearch }: SearchFormProps) => {
+const SearchForm = ({ cities, onSearch, onReset }: SearchFormProps) => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
@@ -22,7 +23,7 @@ const SearchForm = ({ cities, onSearch }: SearchFormProps) => {
     }
 
     return (
-        <form className="search-form" onSubmit={handleSubmit}>
+        <form className="search-form" onSubmit={handleSubmit} onReset={onReset}>
             <label>
                 Min price
                 <input type="number" name="minPrice" min={0} placeholder="Any" />
@@ -52,6 +53,7 @@ const SearchForm = ({ cities, onSearch }: SearchFormProps) => {
             )}
             <input type="text" name="keyword" placeholder="Search by keyword" />
             <button type="submit">Search</button>
+            <button type="reset">Clear Filters</button>
         </form>
     )
 }
