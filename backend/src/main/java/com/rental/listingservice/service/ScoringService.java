@@ -17,8 +17,9 @@ public class ScoringService {
         if(budget == null || budget <= 0) return 0.5; //neutral score
         if(price <= budget) return 1.0; // perfect price under budget
 
-        double over = Math.abs((price - budget) / budget);
-        return Math.max(0, 1-over);
+        // Cast before the subtraction so neither operation is integer arithmetic.
+        double over = ((double) price - budget) / budget;
+        return Math.max(0.0, 1-over);
     }
 
     // use listing date as tiebreaker if multiple listing has same price score. Newer listing gets higher score

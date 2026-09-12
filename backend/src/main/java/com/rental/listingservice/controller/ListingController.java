@@ -19,6 +19,7 @@ public class ListingController {
         this.listingService = listingService;
     }
 
+    // Page size is fixed server-side (ListingService.PAGE_SIZE); client page-size params are ignored.
     @GetMapping("/search")
     public PagedResult<ListingResponse> search(
         @RequestParam(required=false) Integer minPrice,
@@ -27,10 +28,9 @@ public class ListingController {
         @RequestParam(required=false) String city,
         @RequestParam(required=false) String keyword,
         @RequestParam(required=false) Integer page,
-        @RequestParam(required=false) Integer itemsPerPage,
         @RequestParam(required=false) Integer targetBudget
     ) {
-        ListingSearchCriteria criteria = ListingSearchCriteria.of(minPrice, maxPrice, minBedrooms, city, keyword, page, itemsPerPage,targetBudget);
+        ListingSearchCriteria criteria = ListingSearchCriteria.of(minPrice, maxPrice, minBedrooms, city, keyword, page, targetBudget);
         return listingService.search(criteria);
     }
 }

@@ -14,3 +14,6 @@ frontend/.vite/
 *.iml
 .DS_Store
 Thumbs.db
+
+# Local JDK (not part of the repo)
+oracleJdk-*.jdk/

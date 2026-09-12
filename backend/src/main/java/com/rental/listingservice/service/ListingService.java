@@ -10,11 +10,14 @@ import org.springframework.stereotype.Service;
 import com.rental.listingservice.dto.ListingResponse;
 import com.rental.listingservice.dto.ListingSearchCriteria;
 import com.rental.listingservice.dto.PagedResult;
+import com.rental.listingservice.exception.InvalidSearchException;
 import com.rental.listingservice.model.Listing;
 import com.rental.listingservice.repository.ListingRepository;
 
 @Service
 public class ListingService {
+    public static final int PAGE_SIZE = 10;
+
     private final ListingRepository repo;
     private final ScoringService scoringService;
 
@@ -24,6 +27,8 @@ public class ListingService {
     }
 
     public PagedResult<ListingResponse> search(ListingSearchCriteria criteria) {
+        validate(criteria);
+
         List<Listing> filteredList = repo.findAll().stream()
         .filter(item -> matchesPrice(item, criteria))
         .filter(item -> matchesBedroom(item, criteria))
@@ -38,6 +43,30 @@ public class ListingService {
         .toList();
 
         return paginate(scoredList, criteria);
+    }
+
+    private void validate(ListingSearchCriteria criteria) {
+        if (criteria == null) {
+            throw new InvalidSearchException("search criteria must be provided");
+        }
+        if (criteria.minPrice() != null && criteria.minPrice() < 0) {
+            throw new InvalidSearchException("minPrice must not be negative");
+        }
+        if (criteria.maxPrice() != null && criteria.maxPrice() < 0) {
+            throw new InvalidSearchException("maxPrice must not be negative");
+        }
+        if (criteria.minPrice() != null && criteria.maxPrice() != null && criteria.minPrice() > criteria.maxPrice()) {
+            throw new InvalidSearchException("minPrice must not be greater than maxPrice");
+        }
+        if (criteria.minBedrooms() != null && criteria.minBedrooms() < 0) {
+            throw new InvalidSearchException("minBedrooms must not be negative");
+        }
+        if (criteria.targetBudget() != null && criteria.targetBudget() < 0) {
+            throw new InvalidSearchException("targetBudget must not be negative");
+        }
+        if (criteria.page() < 0) {
+            throw new InvalidSearchException("page must not be negative");
+        }
     }
 
     private boolean matchesPrice(Listing item, ListingSearchCriteria criteria) {
@@ -75,14 +104,15 @@ public class ListingService {
 
     private PagedResult<ListingResponse> paginate(List<ListingResponse> listings, ListingSearchCriteria criteria) {
     int totalCount = listings.size();
-    int totalPages = (int) Math.ceil((double) totalCount / criteria.items());
+    int totalPages = (int) Math.ceil((double) totalCount / PAGE_SIZE);
 
-    int fromIndex = criteria.page() * criteria.items();
+    // A very large page overflows int and wraps negative, so the fromIndex < 0 guard is not dead code.
+    int fromIndex = criteria.page() * PAGE_SIZE;
     List<ListingResponse> pageSlice = (fromIndex >= totalCount || fromIndex < 0)
             ? List.of()
-            : listings.subList(fromIndex, Math.min(fromIndex + criteria.items(), totalCount));
+            : listings.subList(fromIndex, Math.min(fromIndex + PAGE_SIZE, totalCount));
 
-    return new PagedResult<>(pageSlice, criteria.page(), criteria.items(), totalCount, totalPages);
+    return new PagedResult<>(pageSlice, criteria.page(), PAGE_SIZE, totalCount, totalPages);
 }
 
     private long getDaysOnMarket(Listing item) {
