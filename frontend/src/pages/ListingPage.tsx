@@ -4,18 +4,14 @@ import ResultsTable from "../components/table/ResultsTable";
 import { useListings } from "../query/listingsQuery";
 import { ListingSearchCriteria } from "../types/Listing.type";
 
-const ITEMS_PER_PAGE = 20;
-
 const ListingPage = () => {
 
     const [searchCriteria, setSearchCriteria] = useState<ListingSearchCriteria>({});
     const [page, setPage] = useState(0);
     const [hasSearched, setHasSearched] = useState(false);
 
-    const { data, isLoading, isError, error } = useListings(searchCriteria, page, ITEMS_PER_PAGE, hasSearched);
+    const { data, isLoading, isError, error } = useListings(searchCriteria, page, hasSearched);
 
-    // The dropdown offers the cities present in the listings returned. A Set
-    // drops the duplicates, since several listings share a city.
     const cities = useMemo(() => {
         const unique = new Set(data?.results.map((listing) => listing.city));
         return [...unique].sort();

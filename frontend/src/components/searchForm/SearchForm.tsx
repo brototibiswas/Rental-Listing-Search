@@ -17,11 +17,12 @@ const SearchForm = ({ cities, onSearch }: SearchFormProps) => {
             maxPrice: validateNumber(formData, 'maxPrice'),
             minBedrooms: validateNumber(formData, 'minBedrooms'),
             keyword: validateText(formData, 'keyword'),
+            targetBudget: validateNumber(formData, 'targetBudget'),
         });
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className="search-form" onSubmit={handleSubmit}>
             <label>
                 Min price
                 <input type="number" name="minPrice" min={0} placeholder="Any" />
@@ -31,18 +32,24 @@ const SearchForm = ({ cities, onSearch }: SearchFormProps) => {
                 <input type="number" name="maxPrice" min={0} placeholder="Any" />
             </label>
             <label>
+                Target budget
+                <input type="number" name="targetBudget" min={0} placeholder="Any" />
+            </label>
+            <label>
                 Min bedrooms
                 <input type="number" name="minBedrooms" min={0} placeholder="Any" />
             </label>
-            <label>
-                City
-                <select name="city" defaultValue="">
-                    <option value="">All cities</option>
-                    {cities.map((city) => (
-                        <option key={city} value={city}>{city}</option>
-                    ))}
-                </select>
-            </label>
+            {cities.length > 0 && (
+                <label>
+                    City
+                    <select name="city" defaultValue="">
+                        <option value="">All cities</option>
+                        {cities.map((city) => (
+                            <option key={city} value={city}>{city}</option>
+                        ))}
+                    </select>
+                </label>
+            )}
             <input type="text" name="keyword" placeholder="Search by keyword" />
             <button type="submit">Search</button>
         </form>
